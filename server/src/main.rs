@@ -1,11 +1,15 @@
 use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
+use log::info;
+use std::env;
 
-#[get("/")]
+#[get("/api/example")]
 async fn hello() -> impl Responder {
-    HttpResponse::Ok().body("Hello world!")
+    HttpResponse::Ok()
+        .content_type("application/json")
+        .body("[{\"message\": \"Hello, world!\"}]")
 }
 
-#[post("/echo")]
+#[post("api/echo")]
 async fn echo(req_body: String) -> impl Responder {
     HttpResponse::Ok().body(req_body)
 }
@@ -16,13 +20,20 @@ async fn manual_hello() -> impl Responder {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    env_logger::init();
+    let port: u16 = env::var("PORT")
+        .ok()
+        .and_then(|s| s.parse().ok())
+        .unwrap_or(8081);
+    info!("server running on port {}", port);
+    println!("Server running on {}", port);
     HttpServer::new(|| {
         App::new()
             .service(hello)
             .service(echo)
-            .route("/hey", web::get().to(manual_hello))
+            .route("/api/hey", web::get().to(manual_hello))
     })
-    .bind(("127.0.0.1", 8080))?
+    .bind(("127.0.0.1", port))?
     .run()
     .await
 }
