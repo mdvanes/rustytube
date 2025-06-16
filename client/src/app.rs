@@ -9,6 +9,8 @@ pub struct TemplateApp {
     value: f32,
 }
 
+use crate::list_items;
+
 impl Default for TemplateApp {
     fn default() -> Self {
         Self {
@@ -85,6 +87,8 @@ impl eframe::App for TemplateApp {
                 "https://github.com/emilk/eframe_template/blob/main/",
                 "Source code."
             ));
+
+            list_items::show_list_items(ui);
 
             ui.with_layout(egui::Layout::bottom_up(egui::Align::LEFT), |ui| {
                 powered_by_egui_and_eframe(ui);
