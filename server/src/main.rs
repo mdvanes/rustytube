@@ -3,7 +3,7 @@ use log::info;
 use std::env;
 
 #[get("/api/example")]
-async fn hello() -> impl Responder {
+async fn example() -> impl Responder {
     HttpResponse::Ok()
         .content_type("application/json")
         .body("[{\"message\": \"Hello, world!\"}]")
@@ -29,7 +29,7 @@ async fn main() -> std::io::Result<()> {
     println!("Server running on {}", port);
     HttpServer::new(|| {
         App::new()
-            .service(hello)
+            .service(example)
             .service(echo)
             .route("/api/hey", web::get().to(manual_hello))
     })
