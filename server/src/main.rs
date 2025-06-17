@@ -61,15 +61,19 @@ async fn main() -> std::io::Result<()> {
     println!("Server running on {}", port);
     
     HttpServer::new(move || {
-        // App::new()
-        //     .service(posts)
-        //     .service(echo)
-        //     .route("/api/hey", web::get().to(manual_hello))
+        use actix_cors::Cors;
         App::new()
+            .wrap(
+                Cors::default()
+                    .allow_any_origin()
+                    .allow_any_method()
+                    .allow_any_header()
+            )
             .app_data(web::Data::from(Arc::clone(&data)))
             .service(index)
             .service(event_stream)
             .service(broadcast_msg)
+            .service(posts)
             .wrap(Logger::default())
     })
     .bind(("127.0.0.1", port))?
