@@ -1,6 +1,7 @@
 // list_items.rs
 use egui::Ui;
 use serde::Deserialize;
+use std::cell::Cell;
 use std::cell::RefCell;
 use std::rc::Rc;
 
@@ -14,6 +15,7 @@ struct Post {
 
 thread_local! {
     static POSTS: Rc<RefCell<Option<Vec<Post>>>> = Rc::new(RefCell::new(None));
+    static EVENT_SOURCE_POLLED: Cell<bool> = Cell::new(false);
 }
 
 async fn run_event_source() -> Result<(), Box<dyn std::error::Error>> {
@@ -37,9 +39,15 @@ async fn run_event_source() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 pub fn show_list_items_eventsourced(ui: &mut Ui) {
-    // start
-    run_event_source();
-    // end
+    // Poll run_event_source only once
+    EVENT_SOURCE_POLLED.with(|polled| {
+        if !polled.get() {
+            polled.set(true);
+            wasm_bindgen_futures::spawn_local(async {
+                let _ = run_event_source().await;
+            });
+        }
+    });
 
     // Fetch posts if not already fetched
     let mut need_fetch = false;
