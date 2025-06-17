@@ -4,12 +4,13 @@ use std::cell::Cell;
 use std::cell::RefCell;
 use std::rc::Rc;
 
+use chrono::Local;
 use futures::stream::StreamExt;
 use reqwest_eventsource::{Event, EventSource};
 
 thread_local! {
     // static POSTS: Rc<RefCell<Option<Vec<Post>>>> = Rc::new(RefCell::new(None));
-    static MESSAGES: Rc<RefCell<Vec<String>>> = Rc::new(RefCell::new(Vec::new()));
+    static MESSAGES: Rc<RefCell<Vec<(String, chrono::NaiveTime)>>> = Rc::new(RefCell::new(Vec::new()));
     static EVENT_SOURCE_POLLED: Cell<bool> = Cell::new(false);
 }
 
@@ -22,8 +23,9 @@ async fn run_event_source() -> Result<(), Box<dyn std::error::Error>> {
                 // Try to parse as JSON and extract "message"
                 if let Ok(json) = serde_json::from_str::<serde_json::Value>(&message.data) {
                     if let Some(msg) = json.get("message").and_then(|v| v.as_str()) {
+                        let now = Local::now().time();
                         MESSAGES.with(|messages| {
-                            messages.borrow_mut().push(msg.to_string());
+                            messages.borrow_mut().push((msg.to_string(), now));
                         });
                     } else {
                         println!("event data (json, no 'message'): {}", message.data);
@@ -58,8 +60,9 @@ pub fn show_list_items_eventsourced(ui: &mut Ui) {
         if messages.is_empty() {
             ui.label("No messages yet.");
         } else {
-            for msg in messages.iter() {
-                ui.label(msg);
+            for (msg, time) in messages.iter() {
+                let timestamp = time.format("%H:%M:%S").to_string();
+                ui.label(format!("[{timestamp}] {msg}"));
             }
         }
     });
