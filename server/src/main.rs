@@ -2,11 +2,14 @@ use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
 use log::info;
 use std::env;
 
-#[get("/api/example")]
-async fn example() -> impl Responder {
+#[get("/api/posts")]
+async fn posts() -> impl Responder {
     HttpResponse::Ok()
+        .insert_header(("Access-Control-Allow-Origin", "*"))
+        .insert_header(("Access-Control-Allow-Methods", "GET, POST, OPTIONS"))
+        .insert_header(("Access-Control-Allow-Headers", "Content-Type"))
         .content_type("application/json")
-        .body("[{\"message\": \"Hello, world!\"}]")
+        .body("[{\"title\": \"Hello, world!\"}]")
 }
 
 #[post("api/echo")]
@@ -29,7 +32,7 @@ async fn main() -> std::io::Result<()> {
     println!("Server running on {}", port);
     HttpServer::new(|| {
         App::new()
-            .service(example)
+            .service(posts)
             .service(echo)
             .route("/api/hey", web::get().to(manual_hello))
     })

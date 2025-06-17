@@ -22,7 +22,7 @@ pub fn show_list_items(ui: &mut Ui) {
         }
     });
     if need_fetch {
-        let request = ehttp::Request::get("https://jsonplaceholder.typicode.com/posts");
+        let request = ehttp::Request::get("http://localhost:8081/api/posts");
         ehttp::fetch(request, move |result: ehttp::Result<ehttp::Response>| {
             if let Ok(response) = result {
                 if let Ok(posts_json) = std::str::from_utf8(&response.bytes) {
