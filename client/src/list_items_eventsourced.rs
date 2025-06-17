@@ -1,0 +1,76 @@
+// list_items.rs
+use egui::Ui;
+use serde::Deserialize;
+use std::cell::RefCell;
+use std::rc::Rc;
+
+use futures::stream::StreamExt;
+use reqwest_eventsource::{Event, EventSource};
+
+#[derive(Deserialize, Debug, Clone)]
+struct Post {
+    title: String,
+}
+
+thread_local! {
+    static POSTS: Rc<RefCell<Option<Vec<Post>>>> = Rc::new(RefCell::new(None));
+}
+
+async fn run_event_source() -> Result<(), Box<dyn std::error::Error>> {
+    // use eventsource_client::{Event, EventSource};
+
+    // Create an EventSource client
+    let mut es = EventSource::get("http://localhost:8081/events");
+
+    // Loop to listen for events
+    while let Some(event) = es.next().await {
+        match event {
+            Ok(Event::Open) => println!("Connection Open!"),
+            Ok(Event::Message(message)) => println!("Message: {:#?}", message),
+            Err(err) => {
+                println!("Error: {}", err);
+                // es.close();
+            }
+        }
+    }
+    Ok(())
+}
+
+pub fn show_list_items_eventsourced(ui: &mut Ui) {
+    // start
+    run_event_source();
+    // end
+
+    // Fetch posts if not already fetched
+    let mut need_fetch = false;
+    POSTS.with(|posts| {
+        if posts.borrow().is_none() {
+            need_fetch = true;
+        }
+    });
+    if need_fetch {
+        let request = ehttp::Request::get("http://localhost:8081/api/posts");
+        ehttp::fetch(request, move |result: ehttp::Result<ehttp::Response>| {
+            if let Ok(response) = result {
+                if let Ok(posts_json) = std::str::from_utf8(&response.bytes) {
+                    if let Ok(posts) = serde_json::from_str::<Vec<Post>>(posts_json) {
+                        POSTS.with(|cell| {
+                            *cell.borrow_mut() = Some(posts);
+                        });
+                    }
+                }
+            }
+        });
+    }
+
+    ui.heading("Posts (EventSource):");
+    POSTS.with(|posts| {
+        if let Some(posts) = &*posts.borrow() {
+            for post in posts.iter().take(10) {
+                ui.label(&post.title);
+            }
+        } else {
+            ui.label("Loading...");
+        }
+    });
+}

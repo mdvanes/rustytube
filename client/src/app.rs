@@ -9,7 +9,7 @@ pub struct TemplateApp {
     value: f32,
 }
 
-use crate::list_items;
+use crate::{list_items, list_items_eventsourced};
 
 impl Default for TemplateApp {
     fn default() -> Self {
@@ -89,6 +89,8 @@ impl eframe::App for TemplateApp {
             ));
 
             list_items::show_list_items(ui);
+
+            list_items_eventsourced::show_list_items_eventsourced(ui);
 
             ui.with_layout(egui::Layout::bottom_up(egui::Align::LEFT), |ui| {
                 powered_by_egui_and_eframe(ui);

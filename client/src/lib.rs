@@ -4,3 +4,5 @@ mod app;
 pub use app::TemplateApp;
 
 pub mod list_items;
+
+pub mod list_items_eventsourced;
