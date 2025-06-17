@@ -42,7 +42,8 @@ async fn broadcast_msg(
     broadcaster: web::Data<Broadcaster>,
     Path((msg,)): Path<(String,)>,
 ) -> impl Responder {
-    broadcaster.broadcast(&msg).await;
+    let json_msg = format!("{{\"message\":\"{}\"}}", msg);
+    broadcaster.broadcast(&json_msg).await;
     HttpResponse::Ok().body("msg sent")
 }
 
