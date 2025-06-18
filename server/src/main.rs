@@ -19,12 +19,14 @@ async fn posts() -> impl Responder {
 
 #[get("/")]
 async fn index() -> impl Responder {
+    println!("GET to /");
     web::Html::new(include_str!("static/index.html").to_owned())
 }
 
 // test by running: curl -X POST 127.0.0.1:8081/broadcast/my_message
 #[get("/events")]
 async fn event_stream(broadcaster: web::Data<Broadcaster>) -> impl Responder {
+    println!("GET to /events");
     broadcaster.new_client().await
 }
 
@@ -33,6 +35,7 @@ async fn broadcast_msg(
     broadcaster: web::Data<Broadcaster>,
     Path((msg,)): Path<(String,)>,
 ) -> impl Responder {
+    println!("POST to /broadcast");
     let json_msg = format!("{{\"message\":\"{}\"}}", msg);
     broadcaster.broadcast(&json_msg).await;
     HttpResponse::Ok().body("msg sent")
@@ -68,7 +71,7 @@ async fn main() -> std::io::Result<()> {
             .service(posts)
             .wrap(Logger::default())
     })
-    .bind(("127.0.0.1", port))?
+    .bind(("0.0.0.0", port))?
     .workers(2)
     .run()
     .await
