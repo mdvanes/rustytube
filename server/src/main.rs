@@ -1,3 +1,4 @@
+use actix_files::Files;
 use actix_web::{App, HttpResponse, HttpServer, Responder, get, middleware::Logger, post, web};
 use actix_web_lab::extract::Path;
 use log::info;
@@ -17,11 +18,11 @@ async fn posts() -> impl Responder {
         .body("[{\"title\": \"Hello, world!\"}]")
 }
 
-#[get("/")]
-async fn index() -> impl Responder {
-    println!("GET to /");
-    web::Html::new(include_str!("static/index.html").to_owned())
-}
+// #[get("/")]
+// async fn index() -> impl Responder {
+//     println!("GET to /");
+//     web::Html::new(include_str!("static/index.html").to_owned())
+// }
 
 // test by running: curl -X POST 127.0.0.1:8081/broadcast/my_message
 #[get("/events")]
@@ -65,10 +66,11 @@ async fn main() -> std::io::Result<()> {
                     .allow_any_header(),
             )
             .app_data(web::Data::from(Arc::clone(&data)))
-            .service(index)
+            // .service(index)
             .service(event_stream)
             .service(broadcast_msg)
             .service(posts)
+            .service(Files::new("/", "./src/static").index_file("index.html"))
             .wrap(Logger::default())
     })
     .bind(("0.0.0.0", port))?
