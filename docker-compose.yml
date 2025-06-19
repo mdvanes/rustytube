@@ -7,4 +7,4 @@ services:
     environment:
       - PORT=8081
       - SOCKET_ADDRESS=0.0.0.0
-      - STATIC_DIR=/usr/local/bin/static
+      - STATIC_DIR=/app/static
