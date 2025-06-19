@@ -52,7 +52,10 @@ async fn main() -> std::io::Result<()> {
         .ok()
         .and_then(|s| s.parse().ok())
         .unwrap_or(8081);
+    let socket_address = env::var("SOCKET_ADDRESS").unwrap_or_else(|_| "127.0.0.1".to_string());
+    let static_dir = env::var("STATIC_DIR").unwrap_or_else(|_| "./src/static".to_string());
 
+    // TODO fix that "info!" is not logged to stdout
     info!("server running on port {}", port);
     println!("Server running on {}", port);
 
@@ -70,10 +73,10 @@ async fn main() -> std::io::Result<()> {
             .service(event_stream)
             .service(broadcast_msg)
             .service(posts)
-            .service(Files::new("/", "./src/static").index_file("index.html"))
+            .service(Files::new("/", &static_dir).index_file("index.html"))
             .wrap(Logger::default())
     })
-    .bind(("0.0.0.0", port))?
+    .bind((socket_address.as_str(), port))?
     .workers(2)
     .run()
     .await

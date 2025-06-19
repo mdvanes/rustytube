@@ -12,6 +12,7 @@ WORKDIR /app/client
 RUN trunk build
 
 # RUN ls dist # remove TODO
+# Next line not needed?
 RUN cp -rf dist/* /app/server/src/static
 
 WORKDIR /app/server
@@ -20,4 +21,6 @@ RUN cargo build --release
 FROM alpine:3.21
 WORKDIR /app
 COPY --from=build-env /app/server/target/release/server /usr/local/bin/server
+RUN mkdir -p /usr/local/bin/static
+COPY --from=build-env /app/client/dist/* /usr/local/bin/static
 ENTRYPOINT ["/usr/local/bin/server"]
