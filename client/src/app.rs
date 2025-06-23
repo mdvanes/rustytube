@@ -7,9 +7,12 @@ pub struct TemplateApp {
 
     #[serde(skip)] // This how you opt-out of serialization of a field
     value: f32,
+
+    #[serde(skip)]
+    map_state: Option<geo::RustyMapState>,
 }
 
-use crate::{list_items, list_items_eventsourced};
+use crate::{geo, list_items, list_items_eventsourced};
 
 impl Default for TemplateApp {
     fn default() -> Self {
@@ -17,6 +20,7 @@ impl Default for TemplateApp {
             // Example stuff:
             label: "Hello World!".to_owned(),
             value: 2.7,
+            map_state: None,
         }
     }
 }
@@ -91,6 +95,14 @@ impl eframe::App for TemplateApp {
             list_items::show_list_items(ui);
 
             list_items_eventsourced::show_list_items_eventsourced(ui);
+
+            // Show the map
+            if self.map_state.is_none() {
+                self.map_state = Some(geo::RustyMapState::new(ctx.clone()));
+            }
+            if let Some(map_state) = &mut self.map_state {
+                map_state.show(ui);
+            }
 
             ui.with_layout(egui::Layout::bottom_up(egui::Align::LEFT), |ui| {
                 powered_by_egui_and_eframe(ui);
