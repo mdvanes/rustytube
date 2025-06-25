@@ -1,5 +1,10 @@
 use egui::Context;
-use walkers::{sources::OpenStreetMap, HttpTiles, Map, MapMemory};
+use walkers::{
+    extras::{GroupedPlaces, LabeledSymbol, LabeledSymbolStyle},
+    lon_lat,
+    sources::OpenStreetMap,
+    HttpTiles, Map, MapMemory, Plugin,
+};
 
 pub struct RustyMapState {
     tiles: HttpTiles,
@@ -15,10 +20,27 @@ impl RustyMapState {
     }
 
     pub fn show(&mut self, ui: &mut egui::Ui) {
-        ui.add(Map::new(
+        let mut map = Map::new(
             Some(&mut self.tiles),
             &mut self.memory,
-            walkers::lon_lat(5.114037, 52.0562824),
-        ));
+            lon_lat(5.114037, 52.0562824),
+        );
+
+        pub fn markers() -> impl Plugin {
+            GroupedPlaces::new(vec![LabeledSymbol {
+                // use walkers::{lon_lat, Position};
+                // pub fn wroclaw_glowny() -> Position {
+                //     lon_lat(17.03664, 51.09916)
+                // }
+                // position: places::wroclaw_glowny(),
+                position: lon_lat(5.1115, 52.0578),
+                label: "HQ".to_owned(),
+                symbol: '🏢',
+                style: LabeledSymbolStyle::default(),
+            }])
+        }
+
+        map = map.with_plugin(markers());
+        ui.add(map);
     }
 }
