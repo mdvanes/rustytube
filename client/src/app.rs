@@ -13,6 +13,8 @@ pub struct TemplateApp {
 }
 
 use crate::{geo, list_items, list_items_eventsourced};
+use egui_material::{button, ButtonColor, ButtonVariant};
+use egui::Widget;
 
 impl Default for TemplateApp {
     fn default() -> Self {
@@ -75,22 +77,30 @@ impl eframe::App for TemplateApp {
             // The central panel the region left after adding TopPanel's and SidePanel's
             ui.heading("RustyTube");
 
-            ui.horizontal(|ui| {
-                ui.label("Write something: ");
-                ui.text_edit_singleline(&mut self.label);
-            });
+            // ui.horizontal(|ui| {
+            //     ui.label("Write something: ");
+            //     ui.text_edit_singleline(&mut self.label);
+            // });
 
             ui.add(egui::Slider::new(&mut self.value, 0.0..=10.0).text("value"));
-            if ui.button("Increment").clicked() {
+            // if ui.button("Increment").clicked() {
+            //     self.value += 1.0;
+            // }
+            if button("Increment")
+                .variant(Some(ButtonVariant::Outlined))
+                .color(Some(ButtonColor::Primary))
+                .ui(ui)
+                .clicked()
+            {
                 self.value += 1.0;
             }
 
             ui.separator();
 
-            ui.add(egui::github_link_file!(
-                "https://github.com/emilk/eframe_template/blob/main/",
-                "Source code."
-            ));
+            // ui.add(egui::github_link_file!(
+            //     "https://github.com/emilk/eframe_template/blob/main/",
+            //     "Source code."
+            // ));
 
             list_items::show_list_items(ui);
 
